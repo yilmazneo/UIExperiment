@@ -41,6 +41,7 @@ namespace Test
         Entities en = new Entities();
         Modes mode = Modes.None;
         Button s = null;
+        Button selected = null;
         int id = 0;
 
         public MainWindow()
@@ -108,11 +109,14 @@ namespace Test
             el.Height = 40;
             Canvas.SetLeft(el, 50);
             Canvas.SetTop(el, 50);
+            el.BorderBrush = Brushes.Red;
             el.Style = this.FindResource(type == Table.Round ? "Circle" : "Rectangle") as Style;
               
             C.Children.Add(el);
             
         }
+
+        int angle = 45;
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -125,11 +129,30 @@ namespace Test
             {
                 mode = Modes.Select;
                 b.Content = "Unselect";
+                b.BorderBrush = Brushes.Blue;
             }
             else if (b.Content.ToString() == "Unselect")
             {
                 mode = Modes.None;
+                selected = null;
                 b.Content = "Select";
+            }
+            else if (b.Content.ToString() == "Rotate")
+            {
+                if(selected != null)
+                {
+                    RotateTransform rotateTransform = new RotateTransform(angle);
+                    angle += 45;
+                    selected.RenderTransform = rotateTransform;
+                }
+            }
+            else if (b.Content.ToString() == "ScaleX")
+            {
+                if(selected != null)
+                {
+                    selected.Width += 10;
+                    selected.UpdateLayout();
+                }
             }
             else if(b.Content.ToString() == "Circle")
             {
@@ -177,7 +200,7 @@ namespace Test
 
         private void C_TouchMove(object sender, TouchEventArgs e)
         {
-            if (mode == Modes.Drag && s!= null)
+            if (s!= null)
             {
                 Canvas.SetLeft(s, e.GetTouchPoint(C).Position.X - s.Width / 2);
                 Canvas.SetTop(s, e.GetTouchPoint(C).Position.Y - s.Height / 2);
@@ -186,8 +209,8 @@ namespace Test
 
         private void C_TouchDown(object sender, TouchEventArgs e)
         {
-            if (mode == Modes.Select)
-            {
+            //if (mode == Modes.Select)
+            //{
                 foreach (Button shape in C.Children)
                 {
                     Rect r = new Rect(new Point(VisualTreeHelper.GetOffset(shape).X, VisualTreeHelper.GetOffset(shape).Y), new Size(shape.Width, shape.Height));
@@ -196,6 +219,10 @@ namespace Test
                         shape.BorderBrush = Brushes.Blue;
                         shape.Background = Brushes.Blue;
                         s = shape;
+                        if(mode == Modes.Select)
+                        {
+                        selected = shape;                        
+                        }
                     }
                     else
                     {
@@ -203,8 +230,13 @@ namespace Test
                     }
 
                 }
+            //}
             }
-            }
+
+        private void C_TouchUp(object sender, TouchEventArgs e)
+        {
+            s = null;
+        }
     }
 
     public class CapVowelsConverter : IValueConverter

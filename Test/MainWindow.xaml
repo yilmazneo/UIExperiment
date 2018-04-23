@@ -21,10 +21,12 @@
             <Button Margin="5" Content="Drag" Click="Button_Click"></Button>
             <Button Margin="5" Content="Circle" Click="Button_Click"></Button>
             <Button Margin="5" Content="Rectangle" Click="Button_Click"></Button>
-            
+            <Button Margin="5" Content="Rotate" Click="Button_Click"></Button>
+            <Button Margin="5" Content="ScaleX" Click="Button_Click"></Button>
+            <Button Margin="5" Content="ScaleY" Click="Button_Click"></Button>
         </StackPanel>
         
-        <Canvas Name="C"  Background="Transparent" Grid.Column="1" MouseMove="Re_MouseMove" TouchMove="C_TouchMove" TouchDown="C_TouchDown" MouseDown="C_MouseDown"  MouseRightButtonDown="C_MouseRightButtonDown">
+        <Canvas Name="C"  Background="Transparent" Grid.Column="1" MouseMove="Re_MouseMove" TouchMove="C_TouchMove" TouchUp="C_TouchUp" TouchDown="C_TouchDown" MouseDown="C_MouseDown"  MouseRightButtonDown="C_MouseRightButtonDown">
 
            
         </Canvas>
