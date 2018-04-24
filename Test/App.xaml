@@ -19,7 +19,7 @@
                     <ControlTemplate TargetType="Button">
                      
                             <Grid>
-                                <Ellipse
+                                <Ellipse Stroke="Red"
                          StrokeThickness="2" Width="40" Height="40">
                                     
                                 </Ellipse>

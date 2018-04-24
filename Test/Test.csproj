@@ -62,6 +62,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ButtonFactory.cs" />
     <Compile Include="List.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -80,6 +81,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Model1.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Partials.cs" />
     <Compile Include="TimePicker.xaml.cs">
       <DependentUpon>TimePicker.xaml</DependentUpon>
     </Compile>

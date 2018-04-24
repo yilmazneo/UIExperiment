@@ -14,6 +14,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Data.Entity;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Test
 {
@@ -39,17 +42,52 @@ namespace Test
     {
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
         Entities en = new Entities();
+
         Modes mode = Modes.None;
         Button s = null;
         Button selected = null;
         int id = 0;
 
+        class Person : INotifyPropertyChanged
+        {
+            private string name;
+            public string Name { get { return name; }
+                set {
+                    if (name != value)
+                    {
+                        name = value;
+                        NotifyPropertyChanged();
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                }
+            }
+
+
+        }
+
+        ObservableCollection<Person> people = new ObservableCollection<Person>( new List<Person>()
+        {
+            new Person(){Name="A"},
+            new Person(){Name="B"},
+            new Person(){Name="C"},
+            new Person(){Name="D"},
+        });
+
         public MainWindow()
         {
             InitializeComponent();
             en.Lists.Load();
-            
 
+            CB.DataContext = en.Lists.Local;
                 
         }
 
@@ -110,8 +148,18 @@ namespace Test
             Canvas.SetLeft(el, 50);
             Canvas.SetTop(el, 50);
             el.BorderBrush = Brushes.Red;
-            el.Style = this.FindResource(type == Table.Round ? "Circle" : "Rectangle") as Style;
-              
+            //Style s = this.FindResource(type == Table.Round ? "Circle" : "Rectangle") as Style;
+
+            //el.Style = this.FindResource(type == Table.Round ? "Circle" : "Rectangle") as Style;
+            if (type == Table.Round)
+            {
+                el.Template = ButtonFactory.GetCircle(Brushes.LightGreen);
+            }
+            else
+            {
+                el.Template = ButtonFactory.GetRectangle(Brushes.LightGreen);
+            }
+
             C.Children.Add(el);
             
         }
@@ -129,7 +177,7 @@ namespace Test
             {
                 mode = Modes.Select;
                 b.Content = "Unselect";
-                b.BorderBrush = Brushes.Blue;
+               
             }
             else if (b.Content.ToString() == "Unselect")
             {
@@ -142,6 +190,8 @@ namespace Test
                 if(selected != null)
                 {
                     RotateTransform rotateTransform = new RotateTransform(angle);
+                    rotateTransform.CenterX = selected.Width / 2;
+                    rotateTransform.CenterY = selected.Height / 2;
                     angle += 45;
                     selected.RenderTransform = rotateTransform;
                 }
@@ -153,6 +203,13 @@ namespace Test
                     selected.Width += 10;
                     selected.UpdateLayout();
                 }
+            }
+            else if (b.Content.ToString() == "ScaleY")
+            {
+                ((List)CB.SelectedItem).Name = "TEST";
+                //people.Add(new Person() { Name = "J" });
+                //people[0].Name = "Z";
+                //CB.Items.Refresh();
             }
             else if(b.Content.ToString() == "Circle")
             {
@@ -221,8 +278,9 @@ namespace Test
                         s = shape;
                         if(mode == Modes.Select)
                         {
-                        selected = shape;                        
-                        }
+                        selected = shape;
+                        shape.Template = ButtonFactory.GetRectangle(Brushes.LightGray);
+                    }
                     }
                     else
                     {

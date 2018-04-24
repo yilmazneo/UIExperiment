@@ -24,6 +24,8 @@
             <Button Margin="5" Content="Rotate" Click="Button_Click"></Button>
             <Button Margin="5" Content="ScaleX" Click="Button_Click"></Button>
             <Button Margin="5" Content="ScaleY" Click="Button_Click"></Button>
+            <ComboBox Name="CB" ItemsSource="{Binding}" DisplayMemberPath="Name" IsSynchronizedWithCurrentItem="True"></ComboBox>
+            <TextBlock Name="TB" Text="{Binding ElementName=CB,Path=SelectedItem.Name,UpdateSourceTrigger=PropertyChanged}"></TextBlock>
         </StackPanel>
         
         <Canvas Name="C"  Background="Transparent" Grid.Column="1" MouseMove="Re_MouseMove" TouchMove="C_TouchMove" TouchUp="C_TouchUp" TouchDown="C_TouchDown" MouseDown="C_MouseDown"  MouseRightButtonDown="C_MouseRightButtonDown">

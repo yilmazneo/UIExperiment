@@ -11,10 +11,32 @@ namespace Test
 {
     using System;
     using System.Collections.Generic;
-    
-    public partial class List
+    using System.ComponentModel;
+    using System.Runtime.CompilerServices;
+
+    public partial class List :INotifyPropertyChanged
     {
+
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
         public int Id { get; set; }
-        public string Name { get; set; }
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                if (name != value)
+                {
+                    name = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
     }
 }
