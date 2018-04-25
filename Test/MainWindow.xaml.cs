@@ -171,10 +171,9 @@ namespace Test
                 {
                     shape.BorderBrush = Brushes.Blue;
                     shape.Background = Brushes.Blue;
-                    s = shape;
-                    if (mode == Modes.Select)
-                    {
-                        selected = shape;
+                    selected = shape;
+
+                        //selected = shape;
                         Table tb = tables[selected.Name];
                         if (tb.Shape == Shape.Rectangle)
                         {
@@ -184,7 +183,7 @@ namespace Test
                         {
                             shape.Template = ButtonFactory.GetCircle(Brushes.LightGray);
                         }
-                    }
+                    
                 }
                 else
                 {
@@ -199,12 +198,12 @@ namespace Test
             if (selected != null && leftDown)
             {
                 Table t = GetSelectedTable();
-                double newX = e.GetPosition(C).X - s.Width / 2;
-                double newY = e.GetPosition(C).Y - s.Height / 2;
+                double newX = e.GetPosition(C).X - selected.Width / 2;
+                double newY = e.GetPosition(C).Y - selected.Height / 2;
                 t.X = newX;
                 t.Y = newY;
-                Canvas.SetLeft(s, t.X);
-                Canvas.SetTop(s, t.Y);
+                Canvas.SetLeft(selected, t.X);
+                Canvas.SetTop(selected, t.Y);
             }
         }
 
@@ -383,7 +382,7 @@ namespace Test
         private void C_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             leftDown = false;
-            s = null;
+            //selected = null;
         }
     }
 
