@@ -28,7 +28,7 @@
             <TextBlock Name="TB" Text="{Binding ElementName=CB,Path=SelectedItem.Name,UpdateSourceTrigger=PropertyChanged}"></TextBlock>
         </StackPanel>
         
-        <Canvas Name="C"  Background="Transparent" Grid.Column="1" MouseMove="Re_MouseMove" TouchMove="C_TouchMove" TouchUp="C_TouchUp" TouchDown="C_TouchDown" MouseDown="C_MouseDown"  MouseRightButtonDown="C_MouseRightButtonDown">
+        <Canvas Name="C"  Background="Transparent" Grid.Column="1" MouseMove="Re_MouseMove" TouchMove="C_TouchMove" TouchUp="C_TouchUp" TouchDown="C_TouchDown" MouseDown="Re_MouseDown" MouseRightButtonDown="Re_MouseDown"  MouseRightButtonUp="C_MouseLeftButtonUp">
 
            
         </Canvas>
