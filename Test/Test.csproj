@@ -82,6 +82,8 @@
       <DependentUpon>Model1.edmx</DependentUpon>
     </Compile>
     <Compile Include="Partials.cs" />
+    <Compile Include="TableController.cs" />
+    <Compile Include="TableRepository.cs" />
     <Compile Include="TimePicker.xaml.cs">
       <DependentUpon>TimePicker.xaml</DependentUpon>
     </Compile>

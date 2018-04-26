@@ -27,19 +27,25 @@ namespace Test
         Select
     }
 
-    public enum Table
+    public enum TableShape
     {
-        Round,
-        Square,
-        Diamond
+        Circle,
+        Rectangle
     }
 
+    public interface ITableLayoutView
+    {
+        void Update(Table table,TableLayoutUpdateMode mode);
+    }
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, ITableLayoutView
     {
+        TableController tableController;
+        SolidColorBrush selectedTableColor = Brushes.LightGray;
+
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
         Entities en = new Entities();
         Dictionary<string, Table> tables = new Dictionary<string, Table>();
@@ -49,102 +55,18 @@ namespace Test
         Button selected = null;
         int id = 0;
 
-        enum Shape
-        {
-            Circle,
-            Rectangle
-        }
 
-        class Table
-        {
-            public string Id { get; set; }
-            public Shape Shape { get; set; }
-            public string Text { get; set; }
-            public int RotateAngle { get; set; }
-            public double Width { get; set; }
-            public double Height { get; set; }
-            public double X { get; set; }
-            public double Y { get; set; }
-            public int ScaleX { get; set; }
-            public int ScaleY { get; set; }
-            public SolidColorBrush color { get; set; }
-        }
-        
-
-        class Person : INotifyPropertyChanged
-        {
-            private string name;
-            public string Name { get { return name; }
-                set {
-                    if (name != value)
-                    {
-                        name = value;
-                        NotifyPropertyChanged();
-                    }
-                }
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-                }
-            }
-
-
-        }
-
-        ObservableCollection<Person> people = new ObservableCollection<Person>( new List<Person>()
-        {
-            new Person(){Name="A"},
-            new Person(){Name="B"},
-            new Person(){Name="C"},
-            new Person(){Name="D"},
-        });
 
         public MainWindow()
         {
             InitializeComponent();
+            TableRepository repository = new TableRepository();
+            tableController = new TableController(repository, this);
+
             en.Lists.Load();
 
             CB.DataContext = en.Lists.Local;
-                
-        }
 
-
-
-        private void Phone_TextInput(object sender, TextCompositionEventArgs e)
-        {
-
-        }
-
-        private void Phone_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox tb = (TextBox)sender;
-
-            // Preserve caret position so that we can later restore it
-            int pos = tb.CaretIndex;
-
-            tb.Text = CapVowels(tb.Text);
-
-            tb.CaretIndex = pos;
-        }
-
-        private string CapVowels(string input)
-        {
-            const string vowels = "aeiou";
-
-            StringBuilder sbInput = new StringBuilder(input);
-            for (int i = 0; i < sbInput.Length; i++)
-            {
-                if (vowels.Contains(char.ToLowerInvariant(sbInput[i])))
-                    sbInput[i] = char.ToUpper(sbInput[i]);
-            }
-
-            return sbInput.ToString();
         }
 
         bool leftDown = false;
@@ -152,44 +74,30 @@ namespace Test
         private void Re_MouseDown(object sender, MouseButtonEventArgs e)
         {
             leftDown = true;
-            if (selected != null)
-            {
-                Table t = GetSelectedTable();
-                if (t.Shape == Shape.Rectangle)
-                {
-                    selected.Template = ButtonFactory.GetRectangle(t.color);
-                }
-                else
-                {
-                    selected.Template = ButtonFactory.GetCircle(t.color);
-                }
-            }
+            //if (selected != null)
+            //{
+            //    Table t = GetSelectedTable();
+            //    if (t.Shape == TableShape.Rectangle)
+            //    {
+            //        selected.Template = ButtonFactory.GetRectangle(t.Color);
+            //    }
+            //    else
+            //    {
+            //        selected.Template = ButtonFactory.GetCircle(t.Color);
+            //    }
+            //}
             foreach (Button shape in C.Children)
             {
                 Rect r = new Rect(new Point(VisualTreeHelper.GetOffset(shape).X, VisualTreeHelper.GetOffset(shape).Y), new Size(shape.Width, shape.Height));
                 if (r.Contains(e.GetPosition(C)))
                 {
-                    shape.BorderBrush = Brushes.Blue;
-                    shape.Background = Brushes.Blue;
+                    if(selected != null)
+                    {
+                        tableController.UpdateModel(selected.Name, TableAction.SetUnselected, null);
+                    }
                     selected = shape;
-
-                        //selected = shape;
-                        Table tb = tables[selected.Name];
-                        if (tb.Shape == Shape.Rectangle)
-                        {
-                            shape.Template = ButtonFactory.GetRectangle(Brushes.LightGray);
-                        }
-                        else
-                        {
-                            shape.Template = ButtonFactory.GetCircle(Brushes.LightGray);
-                        }
-                    
+                    tableController.UpdateModel(selected.Name, TableAction.SetSelected, null);
                 }
-                else
-                {
-                    shape.BorderBrush = Brushes.Red;
-                }
-
             }
         }
 
@@ -197,48 +105,26 @@ namespace Test
         {
             if (selected != null && leftDown)
             {
-                Table t = GetSelectedTable();
                 double newX = e.GetPosition(C).X - selected.Width / 2;
                 double newY = e.GetPosition(C).Y - selected.Height / 2;
-                t.X = newX;
-                t.Y = newY;
-                Canvas.SetLeft(selected, t.X);
-                Canvas.SetTop(selected, t.Y);
+                Dictionary<UpdateKey, object> arguments = new Dictionary<UpdateKey, object>();
+                arguments.Add(UpdateKey.X, newX);
+                arguments.Add(UpdateKey.Y, newY);
+                tableController.UpdateModel(selected.Name, TableAction.UpdateCoordinates, arguments);
             }
         }
 
-        private void CreateTable(Shape type)
+        private void CreateTable(Table model)
         {
-            Table t = new Table()
-            {
-                Id = "S" + id,
-                Text = id.ToString(),
-                Width = 40,
-                Height = 40,
-                X = 50,
-                Y = 50,
-                RotateAngle = 0,
-                Shape = type,
-                ScaleX = 0,
-                ScaleY = 0,
-                color = Brushes.LightGreen
-            };
-
-            tables.Add(t.Id, t);
-
             Button el = new Button();
-            el.Content =t.Text;
-            el.Name = t.Id;
-            id++;
-            el.Width = t.Width + t.ScaleX;
-            el.Height = t.Height + t.ScaleY;
-            Canvas.SetLeft(el, t.X);
-            Canvas.SetTop(el, t.Y);
+            el.Content = model.Text;
+            el.Name = model.Id;            
+            el.Width = model.Width;
+            el.Height = model.Height;
+            Canvas.SetLeft(el, model.X);
+            Canvas.SetTop(el, model.Y);
             el.BorderBrush = Brushes.Red;
-            //Style s = this.FindResource(type == Table.Round ? "Circle" : "Rectangle") as Style;
-
-            //el.Style = this.FindResource(type == Table.Round ? "Circle" : "Rectangle") as Style;
-            if (type == Shape.Circle)
+            if (model.Shape == TableShape.Circle)
             {
                 el.Template = ButtonFactory.GetCircle(Brushes.LightGreen);
             }
@@ -247,8 +133,7 @@ namespace Test
                 el.Template = ButtonFactory.GetRectangle(Brushes.LightGreen);
             }
 
-            C.Children.Add(el);
-            
+            C.Children.Add(el);           
         }
 
         int angle = 45;
@@ -261,51 +146,47 @@ namespace Test
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var b = sender as Button;
-            if(b.Content.ToString() == "Drag")
+            if (b.Content.ToString() == "Update")
             {
-                mode = Modes.Drag;
+                Table t = GetSelectedTable();
+                t.Text = Name.Text;
+                selected.Content = t.Text;
             }
-            else if(b.Content.ToString() == "Select")
+            else if (b.Content.ToString() == "Delete")
             {
-                mode = Modes.Select;
-                b.Content = "Unselect";
-               
+                tables.Remove(selected.Name);
+                C.Children.Remove(selected);
+                selected = null;
             }
             else if (b.Content.ToString() == "Unselect")
             {
                 mode = Modes.None;
                 Table t = GetSelectedTable();
-                if (t.Shape == Shape.Rectangle)
+                if (t.Shape == TableShape.Rectangle)
                 {
-                    selected.Template = ButtonFactory.GetRectangle(t.color);
+                    selected.Template = ButtonFactory.GetRectangle(t.Color);
                 }
                 else
                 {
-                    selected.Template = ButtonFactory.GetCircle(t.color);
+                    selected.Template = ButtonFactory.GetCircle(t.Color);
                 }
                 selected = null;
                 b.Content = "Select";
             }
             else if (b.Content.ToString() == "Rotate")
             {
-                if(selected != null)
+                if (selected != null)
                 {
-                    Table t = GetSelectedTable();
-                    RotateTransform rotateTransform = new RotateTransform(angle);
-                    rotateTransform.CenterX = t.Width / 2;
-                    rotateTransform.CenterY = t.Height / 2;
-                    t.RotateAngle += 45;
-                    angle = t.RotateAngle;                    
-                    selected.RenderTransform = rotateTransform;
+                    
                 }
             }
             else if (b.Content.ToString() == "ScaleX")
             {
-                if(selected != null)
+                if (selected != null)
                 {
                     Table t = GetSelectedTable();
                     t.ScaleX += 10;
-                    selected.Width = t.Width + t.ScaleX;                    
+                    selected.Width = t.Width + t.ScaleX;
                 }
             }
             else if (b.Content.ToString() == "ScaleY")
@@ -313,18 +194,12 @@ namespace Test
                 Table t = GetSelectedTable();
                 t.ScaleY += 10;
                 selected.Height = t.Height + t.ScaleY;
-                //((List)CB.SelectedItem).Name = "TEST";
-                //people.Add(new Person() { Name = "J" });
-                //people[0].Name = "Z";
-                //CB.Items.Refresh();
             }
-            else if(b.Content.ToString() == "Circle")
+            else if (b.Content.ToString() == "Circle" || b.Content.ToString() == "Rectangle")
             {
-                CreateTable(Shape.Circle);
-            }
-            else if (b.Content.ToString() == "Rectangle")
-            {
-                CreateTable(Shape.Rectangle);
+                Dictionary<UpdateKey, Object> arguments = new Dictionary<UpdateKey, object>();
+                arguments.Add(UpdateKey.Shape, b.Content.ToString() == "Circle" ? TableShape.Circle : TableShape.Rectangle);
+                tableController.UpdateModel(null,TableAction.Create,arguments);
             }
             else
             {
@@ -340,7 +215,7 @@ namespace Test
 
         private void C_TouchMove(object sender, TouchEventArgs e)
         {
-            if (s!= null)
+            if (s != null)
             {
                 Canvas.SetLeft(s, e.GetTouchPoint(C).Position.X - s.Width / 2);
                 Canvas.SetTop(s, e.GetTouchPoint(C).Position.Y - s.Height / 2);
@@ -351,28 +226,28 @@ namespace Test
         {
             //if (mode == Modes.Select)
             //{
-                foreach (Button shape in C.Children)
+            foreach (Button shape in C.Children)
+            {
+                Rect r = new Rect(new Point(VisualTreeHelper.GetOffset(shape).X, VisualTreeHelper.GetOffset(shape).Y), new Size(shape.Width, shape.Height));
+                if (r.Contains(e.GetTouchPoint(C).Position))
                 {
-                    Rect r = new Rect(new Point(VisualTreeHelper.GetOffset(shape).X, VisualTreeHelper.GetOffset(shape).Y), new Size(shape.Width, shape.Height));
-                    if (r.Contains(e.GetTouchPoint(C).Position))
+                    shape.BorderBrush = Brushes.Blue;
+                    shape.Background = Brushes.Blue;
+                    s = shape;
+                    if (mode == Modes.Select)
                     {
-                        shape.BorderBrush = Brushes.Blue;
-                        shape.Background = Brushes.Blue;
-                        s = shape;
-                        if(mode == Modes.Select)
-                        {
                         selected = shape;
                         shape.Template = ButtonFactory.GetRectangle(Brushes.LightGray);
                     }
-                    }
-                    else
-                    {
-                        shape.BorderBrush = Brushes.Red;
-                    }
-
                 }
-            //}
+                else
+                {
+                    shape.BorderBrush = Brushes.Red;
+                }
+
             }
+            //}
+        }
 
         private void C_TouchUp(object sender, TouchEventArgs e)
         {
@@ -384,32 +259,78 @@ namespace Test
             leftDown = false;
             //selected = null;
         }
-    }
 
-    public class CapVowelsConverter : IValueConverter
-    {
-        // From bound property TO the control -- no conversion
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public void Update(Table model, TableLayoutUpdateMode mode)
         {
-            return value;
-        }
-
-        // To bound property FROM the control -- capitalize vowels
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            string input = (string)value;
-
-            const string vowels = "aeiou";
-
-            StringBuilder sbInput = new StringBuilder(input);
-            for (int i = 0; i < sbInput.Length; i++)
+            if (mode == TableLayoutUpdateMode.New)
             {
-                if (vowels.Contains(char.ToLowerInvariant(sbInput[i])))
-                    sbInput[i] = char.ToUpper(sbInput[i]);
+                CreateTable(model);
             }
-
-            return sbInput.ToString();
+            else if(mode == TableLayoutUpdateMode.Coordinates)
+            {
+                if (selected != null)
+                {
+                    Canvas.SetLeft(selected, model.X);
+                    Canvas.SetTop(selected, model.Y);
+                    //ControlTemplate ct = null;
+                    //if (model.Shape == TableShape.Circle)
+                    //{
+                    //    ct = ButtonFactory.GetCircle(model.Color);
+                    //}
+                    //else
+                    //{
+                    //    ct = ButtonFactory.GetRectangle(model.Color);
+                    //}
+                    //selected.Template = ct;
+                    //selected.Width = model.Width;
+                    //selected.Height = model.Height;
+                }
+            }
+            else if (mode == TableLayoutUpdateMode.Rotate)
+            {
+                RotateTransform rotateTransform = new RotateTransform(model.RotateAngle);
+                rotateTransform.CenterX = model.Width / 2;
+                rotateTransform.CenterY = model.Height / 2;
+                selected.RenderTransform = rotateTransform;
+            }
+            else if (mode == TableLayoutUpdateMode.SetSelected)
+            {
+                Control c = GetControl(model.Id);
+                UpdateTableTemplate(c, model.Shape, selectedTableColor);
+            }
+            else if (mode == TableLayoutUpdateMode.SetUnselected)
+            {
+                Control c = GetControl(model.Id);
+                UpdateTableTemplate(c, model.Shape, model.Color);
+            }
         }
+
+        private void UpdateTableTemplate(Control c, TableShape shape, SolidColorBrush color)
+        {
+            if (shape == TableShape.Rectangle)
+            {
+                c.Template = ButtonFactory.GetRectangle(color);
+            }
+            else
+            {
+                c.Template = ButtonFactory.GetCircle(color);
+            }
+        }
+
+        private Control GetControl(string id)
+        {
+            Control c = null;
+            foreach(Control child in C.Children)
+            {
+                if(child.Name == id)
+                {
+                    c = child;
+                    break;
+                }
+            }
+            return c;
+        }
+
     }
 
 }
