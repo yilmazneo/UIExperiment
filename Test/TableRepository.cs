@@ -10,10 +10,14 @@ namespace Test
     public enum TableLayoutUpdateMode
     {
         New,
+        Delete,
         Coordinates,
         Rotate,
         SetSelected,
-        SetUnselected
+        SetUnselected,
+        ScaleX,
+        ScaleY,
+        UpdateName
     }
 
     public class Table
@@ -36,6 +40,9 @@ namespace Test
         private Dictionary<string, Table> tables = new Dictionary<string, Table>();
         int id;
         int angle = 45;
+        int scaleRate = 10;
+        int width = 40;
+        int height = 40;
 
         public TableRepository()
         {
@@ -65,6 +72,30 @@ namespace Test
             t.Y = y;
         }
 
+        public void UpdateTableScaleX(string id)
+        {
+            Table t = tables[id];
+            t.ScaleX += scaleRate;
+        }
+
+        public void UpdateTableScaleY(string id)
+        {
+            Table t = tables[id];
+            t.ScaleY += scaleRate;
+        }
+
+        public void UpdateTableRotateAngle(string id)
+        {
+            Table t = tables[id];
+            t.RotateAngle += angle;
+        }
+
+        public void UpdateTableName(string id,string name)
+        {
+            Table t = tables[id];
+            t.Text = name;
+        }
+
         public string AddTable(TableShape shape)
         {
             Table newTable = new Table()
@@ -75,8 +106,8 @@ namespace Test
                 ScaleX = 0,
                 ScaleY = 0,
                 RotateAngle = 0,
-                Width = 40,
-                Height = 40,
+                Width = width,
+                Height = height,
                 X = 50,
                 Y = 50,
                 Shape = shape
@@ -87,6 +118,11 @@ namespace Test
             tables.Add(newTable.Id, newTable);
 
             return newTable.Id;
+        }
+
+        public void DeleteTable(string id)
+        {
+            tables.Remove(id);
         }
 
         public void Save()

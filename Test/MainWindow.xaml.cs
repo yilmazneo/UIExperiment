@@ -20,12 +20,6 @@ using System.Runtime.CompilerServices;
 
 namespace Test
 {
-    public enum Modes
-    {
-        None,
-        Drag,
-        Select
-    }
 
     public enum TableShape
     {
@@ -50,7 +44,6 @@ namespace Test
         Entities en = new Entities();
         Dictionary<string, Table> tables = new Dictionary<string, Table>();
 
-        Modes mode = Modes.None;
         Button s = null;
         Button selected = null;
         int id = 0;
@@ -136,8 +129,6 @@ namespace Test
             C.Children.Add(el);           
         }
 
-        int angle = 45;
-
         private Table GetSelectedTable()
         {
             return tables[selected.Name];
@@ -148,9 +139,12 @@ namespace Test
             var b = sender as Button;
             if (b.Content.ToString() == "Update")
             {
-                Table t = GetSelectedTable();
-                t.Text = Name.Text;
-                selected.Content = t.Text;
+                if(selected != null)
+                {
+                    Dictionary<UpdateKey, Object> arguments = new Dictionary<UpdateKey, object>();
+                    arguments.Add(UpdateKey.Name, Name.Text);
+                    tableController.UpdateModel(selected.Name, TableAction.UpdateName, arguments);
+                }
             }
             else if (b.Content.ToString() == "Delete")
             {
@@ -158,42 +152,23 @@ namespace Test
                 C.Children.Remove(selected);
                 selected = null;
             }
-            else if (b.Content.ToString() == "Unselect")
-            {
-                mode = Modes.None;
-                Table t = GetSelectedTable();
-                if (t.Shape == TableShape.Rectangle)
-                {
-                    selected.Template = ButtonFactory.GetRectangle(t.Color);
-                }
-                else
-                {
-                    selected.Template = ButtonFactory.GetCircle(t.Color);
-                }
-                selected = null;
-                b.Content = "Select";
-            }
             else if (b.Content.ToString() == "Rotate")
             {
                 if (selected != null)
                 {
-                    
+                    tableController.UpdateModel(selected.Name, TableAction.Rotate, null);
                 }
             }
             else if (b.Content.ToString() == "ScaleX")
             {
                 if (selected != null)
                 {
-                    Table t = GetSelectedTable();
-                    t.ScaleX += 10;
-                    selected.Width = t.Width + t.ScaleX;
+                    tableController.UpdateModel(selected.Name, TableAction.ScaleX, null);
                 }
             }
             else if (b.Content.ToString() == "ScaleY")
             {
-                Table t = GetSelectedTable();
-                t.ScaleY += 10;
-                selected.Height = t.Height + t.ScaleY;
+                tableController.UpdateModel(selected.Name, TableAction.ScaleY, null);
             }
             else if (b.Content.ToString() == "Circle" || b.Content.ToString() == "Rectangle")
             {
@@ -201,16 +176,12 @@ namespace Test
                 arguments.Add(UpdateKey.Shape, b.Content.ToString() == "Circle" ? TableShape.Circle : TableShape.Rectangle);
                 tableController.UpdateModel(null,TableAction.Create,arguments);
             }
-            else
-            {
-                mode = Modes.None;
-            }
         }
 
 
         private void C_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            mode = Modes.None;
+ 
         }
 
         private void C_TouchMove(object sender, TouchEventArgs e)
@@ -234,11 +205,11 @@ namespace Test
                     shape.BorderBrush = Brushes.Blue;
                     shape.Background = Brushes.Blue;
                     s = shape;
-                    if (mode == Modes.Select)
-                    {
-                        selected = shape;
-                        shape.Template = ButtonFactory.GetRectangle(Brushes.LightGray);
-                    }
+                    //if (mode == Modes.Select)
+                    //{
+                    //    selected = shape;
+                    //    shape.Template = ButtonFactory.GetRectangle(Brushes.LightGray);
+                    //}
                 }
                 else
                 {
@@ -266,31 +237,24 @@ namespace Test
             {
                 CreateTable(model);
             }
+            else if (mode == TableLayoutUpdateMode.Delete)
+            {
+                Control c = GetControl(model.Id);
+                C.Children.Remove(c);
+            }
             else if(mode == TableLayoutUpdateMode.Coordinates)
             {
                 if (selected != null)
                 {
                     Canvas.SetLeft(selected, model.X);
                     Canvas.SetTop(selected, model.Y);
-                    //ControlTemplate ct = null;
-                    //if (model.Shape == TableShape.Circle)
-                    //{
-                    //    ct = ButtonFactory.GetCircle(model.Color);
-                    //}
-                    //else
-                    //{
-                    //    ct = ButtonFactory.GetRectangle(model.Color);
-                    //}
-                    //selected.Template = ct;
-                    //selected.Width = model.Width;
-                    //selected.Height = model.Height;
                 }
             }
             else if (mode == TableLayoutUpdateMode.Rotate)
             {
                 RotateTransform rotateTransform = new RotateTransform(model.RotateAngle);
-                rotateTransform.CenterX = model.Width / 2;
-                rotateTransform.CenterY = model.Height / 2;
+                rotateTransform.CenterX = (model.Width + model.ScaleX)  / 2;
+                rotateTransform.CenterY = (model.Height + model.ScaleY) / 2;
                 selected.RenderTransform = rotateTransform;
             }
             else if (mode == TableLayoutUpdateMode.SetSelected)
@@ -302,6 +266,21 @@ namespace Test
             {
                 Control c = GetControl(model.Id);
                 UpdateTableTemplate(c, model.Shape, model.Color);
+            }
+            else if (mode == TableLayoutUpdateMode.ScaleX)
+            {
+                Control c = GetControl(model.Id);
+                c.Width = model.Width + model.ScaleX;
+            }
+            else if (mode == TableLayoutUpdateMode.ScaleY)
+            {
+                Control c = GetControl(model.Id);
+                c.Height = model.Height + model.ScaleY;
+            }
+            else if (mode == TableLayoutUpdateMode.UpdateName)
+            {
+                Button b = (Button)GetControl(model.Id);
+                b.Content = model.Text;
             }
         }
 

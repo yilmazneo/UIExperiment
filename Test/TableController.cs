@@ -10,7 +10,8 @@ namespace Test
     {
         Shape,
         X,
-        Y
+        Y,
+        Name
     }
 
     public enum TableAction
@@ -71,23 +72,34 @@ namespace Test
             }
             else if (action == TableAction.Delete)
             {
-
+                Table model = repository.GetModel(id);
+                repository.DeleteTable(id);
+                view.Update(model, TableLayoutUpdateMode.Delete);
             }
             else if (action == TableAction.ScaleX)
             {
-
+                repository.UpdateTableScaleX(id);
+                Table model = repository.GetModel(id);
+                view.Update(model, TableLayoutUpdateMode.ScaleX);
             }
             else if (action == TableAction.ScaleY)
             {
-
+                repository.UpdateTableScaleY(id);
+                Table model = repository.GetModel(id);
+                view.Update(model, TableLayoutUpdateMode.ScaleY);
             }
             else if (action == TableAction.Rotate)
             {
-
+                repository.UpdateTableRotateAngle(id);
+                Table model = repository.GetModel(id);
+                view.Update(model, TableLayoutUpdateMode.Rotate);
             }
             else if (action == TableAction.UpdateName)
             {
-
+                string name = (string)arguments[UpdateKey.Name];
+                repository.UpdateTableName(id, name);
+                Table model = repository.GetModel(id);
+                view.Update(model, TableLayoutUpdateMode.UpdateName);
             }
             else if (action == TableAction.Save)
             {
