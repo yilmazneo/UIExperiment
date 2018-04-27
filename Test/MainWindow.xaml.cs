@@ -176,6 +176,16 @@ namespace Test
                 arguments.Add(UpdateKey.Shape, b.Content.ToString() == "Circle" ? TableShape.Circle : TableShape.Rectangle);
                 tableController.UpdateModel(null,TableAction.Create,arguments);
             }
+            else if(b.Content.ToString() == "Dialog1")
+            {
+                DialogResultManager.ShowDialog("Title1","Message1",new DialogAnswer[] { DialogAnswer.Yes,DialogAnswer.No });
+                Name.Text = DialogResultManager.Answer.ToString();
+            }
+            else if (b.Content.ToString() == "Dialog2")
+            {
+                DialogResultManager.ShowDialog("Title2", "Message2", new DialogAnswer[] { DialogAnswer.OK, DialogAnswer.Cancel });
+                Name.Text = DialogResultManager.Answer.ToString();
+            }
         }
 
 
