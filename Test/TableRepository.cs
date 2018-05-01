@@ -9,6 +9,7 @@ namespace Test
 {
     public enum TableLayoutUpdateMode
     {
+        All,
         New,
         Delete,
         Coordinates,
@@ -32,7 +33,7 @@ namespace Test
         public double Y { get; set; }
         public int ScaleX { get; set; }
         public int ScaleY { get; set; }
-        public SolidColorBrush Color { get; set; }
+        public string Color { get; set; }
     }
 
     public class TableRepository
@@ -72,22 +73,22 @@ namespace Test
             t.Y = y;
         }
 
-        public void UpdateTableScaleX(string id)
+        public void UpdateTableScaleX(string id,int value)
         {
             Table t = tables[id];
-            t.ScaleX += scaleRate;
+            t.ScaleX = value;
         }
 
-        public void UpdateTableScaleY(string id)
+        public void UpdateTableScaleY(string id, int value)
         {
             Table t = tables[id];
-            t.ScaleY += scaleRate;
+            t.ScaleY = value;
         }
 
-        public void UpdateTableRotateAngle(string id)
+        public void UpdateTableRotateAngle(string id,int value)
         {
             Table t = tables[id];
-            t.RotateAngle += angle;
+            t.RotateAngle = value;
         }
 
         public void UpdateTableName(string id,string name)
@@ -96,21 +97,33 @@ namespace Test
             t.Text = name;
         }
 
-        public string AddTable(TableShape shape)
+        public void UpdateTableColor(string id, string color)
+        {
+            Table t = tables[id];
+            t.Color = color;
+        }
+
+        public void UpdateTableShape(string id, TableShape shape)
+        {
+            Table t = tables[id];
+            t.Shape = shape;
+        }
+
+        public string AddTable(Dictionary<UpdateKey, object> args)
         {
             Table newTable = new Table()
             {
                 Id = "S" + id,
-                Text = "Table " + id,
-                Color = Brushes.LightGreen,
-                ScaleX = 0,
-                ScaleY = 0,
-                RotateAngle = 0,
-                Width = width,
-                Height = height,
-                X = 50,
-                Y = 50,
-                Shape = shape
+                Text = args[UpdateKey.Name].ToString(),
+                Color = args[UpdateKey.Color].ToString(),
+                ScaleX = int.Parse(args[UpdateKey.ScaleX].ToString()),
+                ScaleY = int.Parse(args[UpdateKey.ScaleY].ToString()),
+                RotateAngle = int.Parse(args[UpdateKey.Angle].ToString()),
+                Width = double.Parse(args[UpdateKey.Width].ToString()),
+                Height = double.Parse(args[UpdateKey.Height].ToString()),
+                X = double.Parse(args[UpdateKey.X].ToString()),
+                Y = double.Parse(args[UpdateKey.Y].ToString()),
+                Shape = args[UpdateKey.Shape].ToString() == "Circle" ? TableShape.Circle : TableShape.Rectangle
             };
 
             id++;

@@ -11,7 +11,13 @@ namespace Test
         Shape,
         X,
         Y,
-        Name
+        Name,
+        ScaleX,
+        ScaleY,
+        Color,
+        Angle,
+        Width,
+        Height
     }
 
     public enum TableAction
@@ -26,7 +32,8 @@ namespace Test
         Save,
         RevertChanges,
         SetSelected,
-        SetUnselected
+        SetUnselected,
+        UpdateAll
     }
     class TableController
     {
@@ -46,9 +53,29 @@ namespace Test
 
         public void UpdateModel(string id,TableAction action,Dictionary<UpdateKey,object> arguments)
         {
+            if(action == TableAction.UpdateAll)
+            {               
+                double x = (double)arguments[UpdateKey.X];
+                double y = (double)arguments[UpdateKey.Y];
+                repository.UpdateTableCoordinates(id, x, y);
+                int scaleX = (int)arguments[UpdateKey.ScaleX];
+                int scaleY = (int)arguments[UpdateKey.ScaleY];
+                repository.UpdateTableScaleX(id, scaleX);
+                repository.UpdateTableScaleY(id, scaleY);
+                int rotateAngle = (int)arguments[UpdateKey.Angle];
+                repository.UpdateTableRotateAngle(id,rotateAngle);
+                string name = (string)arguments[UpdateKey.Name];
+                repository.UpdateTableName(id, name);
+                string color = (string)arguments[UpdateKey.Color];
+                repository.UpdateTableColor(id, color);
+                TableShape shape = (TableShape)arguments[UpdateKey.Shape];
+                repository.UpdateTableShape(id, shape);
+                Table model = repository.GetModel(id);
+                view.Update(model,TableLayoutUpdateMode.All);
+            }
             if(action == TableAction.Create)
             {
-                string newId = repository.AddTable((TableShape)arguments[UpdateKey.Shape]);
+                string newId = repository.AddTable(arguments);
                 Table model = repository.GetModel(newId);
                 view.Update(model,TableLayoutUpdateMode.New);
             }
@@ -76,21 +103,9 @@ namespace Test
                 repository.DeleteTable(id);
                 view.Update(model, TableLayoutUpdateMode.Delete);
             }
-            else if (action == TableAction.ScaleX)
-            {
-                repository.UpdateTableScaleX(id);
-                Table model = repository.GetModel(id);
-                view.Update(model, TableLayoutUpdateMode.ScaleX);
-            }
-            else if (action == TableAction.ScaleY)
-            {
-                repository.UpdateTableScaleY(id);
-                Table model = repository.GetModel(id);
-                view.Update(model, TableLayoutUpdateMode.ScaleY);
-            }
             else if (action == TableAction.Rotate)
             {
-                repository.UpdateTableRotateAngle(id);
+                repository.UpdateTableRotateAngle(id,0);
                 Table model = repository.GetModel(id);
                 view.Update(model, TableLayoutUpdateMode.Rotate);
             }

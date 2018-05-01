@@ -18,7 +18,7 @@
 
         <StackPanel Grid.Column="0">
             <Button Margin="5" Content="Select" Click="Button_Click"></Button>
-            <Button Margin="5" Content="Drag" Click="Button_Click"></Button>
+            <CheckBox Name="DragRadioButton" Content="Drag Mode"></CheckBox>
             <Button Margin="5" Content="Circle" Click="Button_Click"></Button>
             <Button Margin="5" Content="Rectangle" Click="Button_Click"></Button>
             <Button Margin="5" Content="Rotate" Click="Button_Click"></Button>
